@@ -1,0 +1,1 @@
+uvicorn --reload --port=8080 fastapi_pypi_proxy:app
