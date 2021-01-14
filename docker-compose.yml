@@ -1,0 +1,17 @@
+version: "3"
+services:
+  fastapi-app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: fastapi_pypi_proxy
+    container_name: fastapi_pypi_proxy
+    ports:
+      - 8080:8080
+    environment:
+      PYPI_PROXY_HOST: 0.0.0.0
+      PYPI_PROXY_PORT: 8080
+      PYPI_SOURCE: https://pypi.doubanio.com
+      PYPI_PROXY_ROOT_DIR: /PYPI_PROXY
+      PYPI_PROXY_LOG_LEVEL: ERROR
+    command: python run.py

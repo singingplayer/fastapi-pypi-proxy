@@ -4,8 +4,12 @@
 *.tar.gz
 *.whl
 *.egg
+*.egg-info
 
 __pycache__/
 packages/
 log/
 templates/
+buidl/
+dist/
+*env/

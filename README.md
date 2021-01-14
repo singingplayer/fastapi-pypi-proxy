@@ -2,6 +2,16 @@
 A pypi proxy using fastapi
 
 
-TodoL:
-1、适配国内多个镜像源
-2、安装包杀毒
+# install
+
+```
+pip install fastapi-pypi-proxy
+```
+
+# docker
+
+```
+
+docker-compose up -d
+
+安装包杀毒

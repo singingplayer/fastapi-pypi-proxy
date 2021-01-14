@@ -12,7 +12,7 @@ host = os.environ.get("PYPI_PROXY_HOST", "0.0.0.0")
 port = int(os.environ.get("PYPI_PROXY_PORT", 8080))
 
 root_dir = os.environ.get("PYPI_PROXY_ROOT_DIR") or os.path.abspath(os.path.dirname(__file__))
-log_dir = os.environ.get("PYPI_PROXY_LOG_DIR") or os.path.join(root_dir, "log")
+log_dir = os.path.join(root_dir, "log")
 log_file = os.path.join(log_dir, "pypi_proxy.log")
 log_level = os.environ.get("PYPI_PROXY_LOG_LEVEL", "ERROR")
 log_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> \n<level>{message}</level>"
@@ -20,10 +20,10 @@ log_rotation = "00:00"
 log_retention = "7 days"
 log_enqueue = True
 
-pypi_source = os.environ.get("PYPI_SOURCE", "https://pypi.org")  # 官方
-# pypi_source = os.environ.get("PYPI_SOURCE", "https://pypi.doubanio.com")  # 豆瓣
+# pypi_source = os.environ.get("PYPI_SOURCE", "https://pypi.org")  # 官方
 # pypi_source = os.environ.get("PYPI_SOURCE", "https://mirrors.aliyun.com/pypi")  # 阿里
 # pypi_source = os.environ.get("PYPI_SOURCE", "https://mirrors.cloud.tencent.com/pypi")  # 腾讯
+pypi_source = os.environ.get("PYPI_SOURCE", "https://pypi.doubanio.com")  # 豆瓣
 
 # log
 logger.add(
@@ -118,23 +118,13 @@ def file_list_cache(package_name: str):
 @app.get("/packages/{p1}/{p2}/{p3}/{package_name}", summary="某个包的某个版本", description="")
 def file_download(p1: str, p2: str, p3: str, package_name: str, background_tasks: BackgroundTasks):
     try:
-        file_path = os.path.join(root_dir + '/packages', p1, p2, p3, package_name).replace("\\", "/")
+        file_path = os.path.join(root_dir, 'packages', p1, p2, p3, package_name).replace("\\", "/")
         if os.path.exists(file_path):
             logger.debug(f"Found local file in repository for: {package_name}")
             return FileResponse(file_path, filename=package_name)
         else:
             url = f"{pypi_source}/packages/{p1}/{p2}/{p3}/{package_name}"
             logger.debug(f"Download start: {package_name}, from url: {url}")
-
-            # response = requests.get(url)
-            # if response.status_code == 200:
-            #     content = response.content
-            #     background_tasks.add_task(write_file, file_path, content)
-            #     logger.debug(f"Download finished: {package_name}")
-            #     return StreamingResponse(BytesIO(response.content))
-            # else:
-            #     logger.warning(f"Download error: {package_name}, fail reason: {response.text}")
-            #     return PlainTextResponse("File not found", status_code=404)
 
             response = requests.get(url, stream=True)
             if response.status_code == 200:
