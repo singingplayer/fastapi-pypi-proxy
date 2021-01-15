@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name = "fastapi_pypi_proxy",
-    version = "0.0.1",
+    version = "0.0.2",
     description="A pypi proxy using fastapi",
     author="xyzou",
     author_email="zouxinyin1992@163.com",

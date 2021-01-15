@@ -8,12 +8,13 @@ from fastapi import FastAPI, APIRouter, BackgroundTasks
 from fastapi.responses import PlainTextResponse, HTMLResponse, StreamingResponse, FileResponse, RedirectResponse
 
 # config
-host = os.environ.get("PYPI_PROXY_HOST", "0.0.0.0")
-port = int(os.environ.get("PYPI_PROXY_PORT", 8080))
+root_dir = os.path.join(os.path.expanduser('~'), ".fastapi_pypi_proxy")
 
-root_dir = os.environ.get("PYPI_PROXY_ROOT_DIR") or os.path.abspath(os.path.dirname(__file__))
-log_dir = os.path.join(root_dir, "log")
-log_file = os.path.join(log_dir, "pypi_proxy.log")
+package_dir = os.environ.get("PYPI_PROXY_PACKAGE_DIR") or os.path.join(root_dir, "packages")
+html_dir = os.path.join(package_dir, "simple")
+
+log_dir = os.environ.get("PYPI_PROXY_LOG_DIR") or os.path.join(root_dir, "log")
+log_file = os.path.join(log_dir, "fastapi_pypi_proxy.log")
 log_level = os.environ.get("PYPI_PROXY_LOG_LEVEL", "ERROR")
 log_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> \n<level>{message}</level>"
 log_rotation = "00:00"
@@ -40,14 +41,12 @@ app = FastAPI()
 
 def write_html(package_name: str, text: str):
     try:
-        parent_dir = os.path.join(root_dir, "simple")
-        if not os.path.isdir(parent_dir):
-            os.makedirs(parent_dir)
-        with open(os.path.join(parent_dir, package_name + ".html"), "w")as f:
+        if not os.path.isdir(html_dir):
+            os.makedirs(html_dir)
+        with open(os.path.join(html_dir, package_name + ".html"), "w")as f:
             f.write(text)
     except:
         logger.error(traceback.format_exc())
-
 
 def write_file(full_path, response):
     try:
@@ -74,9 +73,8 @@ def index():
 def package_list():
     try:
         package_list = []
-        catalog = os.path.join(root_dir, "simple")
-        if os.path.isdir(catalog):
-            for each in os.listdir(catalog):
+        if os.path.isdir(html_dir):
+            for each in os.listdir(html_dir):
                 package_name = each.replace(".html", "")
                 package_list.append(f'<a href="../simple/{package_name}">{package_name}</a><br>')
         package_list = "".join(package_list)
@@ -105,7 +103,7 @@ def file_list(package_name: str, background_tasks: BackgroundTasks):
 @app.get("/simple/cache/{package_name}", summary="获取某个包的完整版本（缓存）", description="")
 def file_list_cache(package_name: str):
     try:
-        html_cache = os.path.join(root_dir, "simple", package_name + ".html")
+        html_cache = os.path.join(html_dir, "simple", package_name + ".html")
         if os.path.exists(html_cache):
             with open(html_cache)as f:
                 return HTMLResponse(f.read())
@@ -118,8 +116,8 @@ def file_list_cache(package_name: str):
 @app.get("/packages/{p1}/{p2}/{p3}/{package_name}", summary="某个包的某个版本", description="")
 def file_download(p1: str, p2: str, p3: str, package_name: str, background_tasks: BackgroundTasks):
     try:
-        file_path = os.path.join(root_dir, 'packages', p1, p2, p3, package_name).replace("\\", "/")
-        if os.path.exists(file_path):
+        file_path = os.path.join(package_dir, p1, p2, p3, package_name)
+        if os.path.isfile(file_path):
             logger.debug(f"Found local file in repository for: {package_name}")
             return FileResponse(file_path, filename=package_name)
         else:
