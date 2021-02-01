@@ -7,17 +7,20 @@ A pypi proxy using fastapi
 pip install fastapi-pypi-proxy
 ```
 
-## run
+## server
+
+### command line
 ```
 python example.py
 ```
+or 
 
-## docker
+### docker
 ```
 docker-compose up -d
 ```
 
 ## client
 ```
-pip install -i http://127.0.0.1:8000/simple package_name
+pip install package_name -i http://127.0.0.1:8000/simple 
 ```
