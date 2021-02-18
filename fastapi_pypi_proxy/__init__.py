@@ -69,6 +69,10 @@ def ping():
 def index():
     return RedirectResponse("../simple")
 
+@app.get("/favicon.ico")
+def favicon():
+    return
+
 @app.get("/simple", summary="某个包的缓存版本展示页", description="")
 def package_list():
     try:
