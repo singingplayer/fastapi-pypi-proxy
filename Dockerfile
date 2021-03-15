@@ -11,3 +11,5 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositorie
     && rm -rf /lib/apk \
     && rm -rf /usr/share/apk \
     && rm -rf /var/lib/apk 
+ENTRYPOINT python -c "from fastapi_pypi_proxy import Proxy;p = Proxy();p.run()"
+

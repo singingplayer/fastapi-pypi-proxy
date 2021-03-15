@@ -9,8 +9,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      PYPI_SOURCE: https://pypi.doubanio.com
       PYPI_PROXY_PACKAGE_DIR: /PYPI_PROXY_PACKAGE_DIR
       PYPI_PROXY_LOG_DIR: /PYPI_PROXY_LOG_DIR
       PYPI_PROXY_LOG_LEVEL: ERROR
-    command: uvicorn fastapi_pypi_proxy:app --host=0.0.0.0 --port=8000
+      PYPI_SOURCE: https://pypi.doubanio.com

@@ -9,13 +9,13 @@ pip install fastapi-pypi-proxy
 
 ## server
 
-### command line
 ```
-python example.py
+from fastapi_pypi_proxy import Proxy
+p = Proxy()
+p.start()
 ```
 or 
 
-### docker
 ```
 docker-compose up -d
 ```
