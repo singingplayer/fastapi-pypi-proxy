@@ -4,27 +4,23 @@ from io import BytesIO, BufferedReader
 
 import requests
 from loguru import logger
-from fastapi import FastAPI, APIRouter, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import PlainTextResponse, HTMLResponse, StreamingResponse, FileResponse, RedirectResponse
-import uvicorn
 
-class Proxy:
-    def __init__(self, host="0.0.0.0", port=8000, package_dir="", log_dir="", log_level="ERROR", 
+def create_app(package_dir="", log_dir="", log_level="ERROR", 
                 pypi_source="https://pypi.doubanio.com"):
-        self.host = host
-        self.port = port
-
         root_dir = os.path.join(os.path.expanduser('~'), ".fastapi_pypi_proxy")
 
         package_dir = os.environ.get("PYPI_PROXY_PACKAGE_DIR", package_dir)
-        if os.path.isdir(package_dir):
+        print(package_dir, os.path.isdir(package_dir))
+        if package_dir != "":
             package_dir = package_dir
         else:
             package_dir = os.path.join(root_dir, "packages")
         html_dir = os.path.join(package_dir, "simple")
 
         log_dir = os.environ.get("PYPI_PROXY_LOG_DIR", log_dir)
-        if os.path.isdir(log_dir):
+        if log_dir != "":
             log_dir = log_dir
         else:
             log_dir = os.path.join(root_dir, "logs")
@@ -51,7 +47,7 @@ class Proxy:
         )
 
         # fastapi
-        self.app = FastAPI()
+        app = FastAPI()
 
         def write_html(package_name: str, text: str):
             try:
@@ -75,19 +71,19 @@ class Proxy:
                 os.remove(full_path)
                 logger.error(traceback.format_exc())
 
-        @self.app.get("/ping", summary="测试网络", description="")
+        @app.get("/ping", summary="测试网络", description="")
         def ping():
             return PlainTextResponse("pong")
 
-        @self.app.get("/")
+        @app.get("/")
         def index():
             return RedirectResponse("../simple")
 
-        @self.app.get("/favicon.ico")
+        @app.get("/favicon.ico")
         def favicon():
             return
 
-        @self.app.get("/simple", summary="某个包的缓存版本展示页", description="")
+        @app.get("/simple", summary="某个包的缓存版本展示页", description="")
         def package_list():
             try:
                 package_list = []
@@ -101,7 +97,7 @@ class Proxy:
                 logger.error(traceback.format_exc())
                 return PlainTextResponse("Package not found", status_code=404)
 
-        @self.app.get("/simple/{package_name}", summary="获取某个包的完整版本（最新）", description="")
+        @app.get("/simple/{package_name}", summary="获取某个包的完整版本（最新）", description="")
         def file_list(package_name: str, background_tasks: BackgroundTasks):
             try:
                 url = f"{pypi_source}/simple/{package_name}"
@@ -118,7 +114,7 @@ class Proxy:
                 logger.error(traceback.format_exc())
                 return PlainTextResponse("Page not found", status_code=404)
 
-        @self.app.get("/simple/cache/{package_name}", summary="获取某个包的完整版本（缓存）", description="")
+        @app.get("/simple/cache/{package_name}", summary="获取某个包的完整版本（缓存）", description="")
         def file_list_cache(package_name: str):
             try:
                 html_cache = os.path.join(html_dir, package_name + ".html")
@@ -131,7 +127,7 @@ class Proxy:
                 logger.error(traceback.format_exc())
                 return PlainTextResponse("Page not found", status_code=404)
 
-        @self.app.get("/packages/{p1}/{p2}/{p3}/{package_name}", summary="某个包的某个版本", description="")
+        @app.get("/packages/{p1}/{p2}/{p3}/{package_name}", summary="某个包的某个版本", description="")
         def file_download(p1: str, p2: str, p3: str, package_name: str, background_tasks: BackgroundTasks):
             try:
                 file_path = os.path.join(package_dir, p1, p2, p3, package_name)
@@ -152,5 +148,6 @@ class Proxy:
                 logger.error(traceback.format_exc())
                 return PlainTextResponse("File not found", status_code=404)
 
-    def run(self):
-        uvicorn.run(self.app, host=self.host, port=self.port)
+        return app
+    # def run(self):
+    #     uvicorn.run(app, host=host, port=port)

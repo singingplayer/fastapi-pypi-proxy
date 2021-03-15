@@ -2,25 +2,30 @@
 A pypi proxy using fastapi
 
 
-## install
+## 服务端
+
+* 模块安装
 ```
 pip install fastapi-pypi-proxy
 ```
 
-## server
-
+* 脚本运行
 ```
-from fastapi_pypi_proxy import Proxy
-p = Proxy()
-p.start()
-```
-or 
+from fastapi_pypi_proxy import create_app
+import uvicorn
 
+app = create_app()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+```
+
+* docker 部署
 ```
 docker-compose up -d
 ```
 
-## client
+## 客户端
 ```
 pip install package_name -i http://127.0.0.1:8000/simple 
 ```

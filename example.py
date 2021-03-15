@@ -1,4 +1,8 @@
-from fastapi_pypi_proxy import Proxy
+from fastapi_pypi_proxy import create_app
+import uvicorn
 
-p = Proxy()
-p.run()
+
+app = create_app()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
